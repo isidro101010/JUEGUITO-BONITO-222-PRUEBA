@@ -1,216 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terremoto: Hacia la Zona Segura</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --cream: #fff8e7;
+      --pink: #ff6b8a;
+      --yellow: #ffd166;
+      --blue: #5cc8ff;
+      --green: #63d471;
+      --panel: rgba(26, 34, 55, 0.92);
+    }
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terremoto: Hacia la Zona Segura</title>
-<style>
-  :root {
-    --ink: #172033;
-    --cream: #fff8e7;
-    --pink: #ff6b8a;
-    --yellow: #ffd166;
-    --blue: #5cc8ff;
-    --green: #63d471;
-    --panel: rgba(26, 34, 55, 0.92);
-  }
+    * { box-sizing: border-box; }
 
-  * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--cream);
+    }
 
-  html, body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: var(--ink);
-    font-family: Arial, Helvetica, sans-serif;
-    color: var(--cream);
-  }
+    body {
+      display: grid;
+      place-items: center;
+    }
 
-  body {
-    display: grid;
-    place-items: center;
-  }
+    .game-shell {
+      position: relative;
+      width: min(96vw, 1100px);
+      height: min(90vh, 680px);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      background: #203052;
+    }
 
-  .game-shell {
-    position: relative;
-    width: min(96vw, 1100px);
-    height: min(90vh, 680px);
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
-    background: #203052;
-  }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(#284c7a 0%, #78d0ef 52%, #f4d38e 100%);
+    }
 
-  canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(#284c7a 0%, #78d0ef 52%, #f4d38e 100%);
-  }
+    .hud {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      pointer-events: none;
+    }
 
-  .hud {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    right: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 10;
-    pointer-events: none;
-  }
+    .tag, .coin-box, .health-wrap {
+      background: rgba(19, 26, 42, 0.66);
+      border: 2px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(3px);
+      border-radius: 14px;
+      padding: 8px 12px;
+      font-weight: 700;
+    }
 
-  .tag, .coin-box, .health-wrap {
-    background: rgba(19, 26, 42, 0.66);
-    border: 2px solid rgba(255,255,255,0.1);
-    backdrop-filter: blur(3px);
-    border-radius: 14px;
-    padding: 8px 12px;
-    font-weight: 700;
-  }
+    .tag { min-width: 150px; text-align: center; }
+    .coin-box { font-size: 1.1rem; }
+    .health-wrap { min-width: 180px; }
 
-  .tag {
-    min-width: 150px;
-    text-align: center;
-  }
+    .health-bar {
+      width: 100%;
+      height: 18px;
+      background: rgba(255,255,255,0.14);
+      border-radius: 999px;
+      overflow: hidden;
+    }
 
-  .coin-box {
-    font-size: 1.1rem;
-  }
+    .health-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #ff5d6c, #ffcb5b, #63d471);
+      border-radius: inherit;
+      transition: width 120ms ease;
+    }
 
-  .health-wrap {
-    min-width: 180px;
-  }
+    .health-label {
+      display: block;
+      text-align: right;
+      font-size: 0.8rem;
+      margin-top: 4px;
+    }
 
-  .health-bar {
-    width: 100%;
-    height: 18px;
-    background: rgba(255,255,255,0.14);
-    border-radius: 999px;
-    overflow: hidden;
-  }
+    .toast {
+      position: absolute;
+      left: 50%;
+      bottom: 24px;
+      transform: translate(-50%, 20px);
+      opacity: 0;
+      background: rgba(23, 32, 51, 0.9);
+      color: var(--cream);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 700;
+      transition: all 180ms ease;
+      z-index: 12;
+      pointer-events: none;
+    }
 
-  .health-fill {
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(90deg, #ff5d6c, #ffcb5b, #63d471);
-    border-radius: inherit;
-    transition: width 120ms ease;
-  }
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
 
-  .health-label {
-    display: block;
-    text-align: right;
-    font-size: 0.8rem;
-    margin-top: 4px;
-  }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      place-items: center;
+      z-index: 20;
+      background: rgba(17, 21, 34, 0.52);
+    }
 
-  .toast {
-    position: absolute;
-    left: 50%;
-    bottom: 24px;
-    transform: translate(-50%, 20px);
-    opacity: 0;
-    background: rgba(23, 32, 51, 0.9);
-    color: var(--cream);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 999px;
-    padding: 10px 18px;
-    font-weight: 700;
-    transition: all 180ms ease;
-    z-index: 12;
-  }
+    .overlay.visible { display: grid; }
 
-  .toast.show {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
+    .panel {
+      width: min(90%, 540px);
+      background: var(--panel);
+      border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 26px 24px 20px;
+      text-align: center;
+      box-shadow: 0 18px 34px rgba(0,0,0,0.35);
+    }
 
-  .overlay {
-    position: absolute;
-    inset: 0;
-    display: none;
-    place-items: center;
-    z-index: 20;
-    background: rgba(17, 21, 34, 0.52);
-  }
+    .panel h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 3vw, 3rem);
+    }
 
-  .overlay.visible {
-    display: grid;
-  }
+    .subtitle {
+      margin: 0 0 18px;
+      line-height: 1.5;
+      color: #eae3d2;
+    }
 
-  .panel {
-    width: min(90%, 540px);
-    background: var(--panel);
-    border: 2px solid rgba(255,255,255,0.08);
-    border-radius: 22px;
-    padding: 26px 24px 20px;
-    text-align: center;
-    box-shadow: 0 18px 34px rgba(0,0,0,0.35);
-  }
+    .shop-grid, .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
 
-  .panel h1 {
-    margin: 0 0 10px;
-    font-size: clamp(2rem, 3vw, 3rem);
-  }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 100ms ease, filter 100ms ease;
+    }
 
-  .subtitle {
-    margin: 0 0 18px;
-    line-height: 1.5;
-    color: #eae3d2;
-  }
+    button:hover { transform: translateY(-1px); filter: brightness(1.04); }
 
-  .shop-grid, .options-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
-    margin-top: 16px;
-  }
+    .primary {
+      background: linear-gradient(135deg, var(--yellow), #ffb703);
+      color: #1e1a17;
+    }
 
-  button {
-    border: 0;
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: transform 100ms ease, filter 100ms ease;
-  }
+    .secondary {
+      background: linear-gradient(135deg, var(--blue), #7be0ff);
+      color: #10263a;
+    }
 
-  button:hover { transform: translateY(-1px); filter: brightness(1.04); }
+    .skin-card {
+      background: rgba(255,255,255,0.05);
+      color: var(--cream);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 12px 8px;
+      text-align: center;
+    }
 
-  .primary {
-    background: linear-gradient(135deg, var(--yellow), #ffb703);
-    color: #1e1a17;
-  }
+    .skin-card.active {
+      outline: 3px solid var(--yellow);
+    }
 
-  .secondary {
-    background: linear-gradient(135deg, var(--blue), #7be0ff);
-    color: #10263a;
-  }
-
-  .danger {
-    background: linear-gradient(135deg, var(--pink), #ff8ea7);
-    color: white;
-  }
-
-  .skin-card {
-    background: rgba(255,255,255,0.05);
-    color: var(--cream);
-    border: 1px solid rgba(255,255,255,0.08);
-    padding: 12px 8px;
-    text-align: center;
-  }
-
-  .skin-card.active {
-    outline: 3px solid var(--yellow);
-  }
-
-  .meta {
-    margin-top: 14px;
-    font-size: 0.95rem;
-    opacity: 0.9;
-  }
-:root{--ink:#172033;--cream:#fff8e7;--pink:#ff6b8a;--yellow:#ffd166;--blue:#5cc8ff;--panel:rgba(20,25,48,.93)}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--ink);font-family:Arial,Helvetica,sans-serif;color:var(--cream)}body{display:grid;place-items:center}.game-shell{position:relative;width:min(96vw,1100px);height:min(90vh,680px);border-radius:18px;overflow:hidden;box-shadow:0 20px 50px #0007;background:#111936}canvas{display:block;width:100%;height:100%}.hud{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:center;z-index:10;pointer-events:none}.tag,.coin-box,.health-wrap{background:#131a2aaa;border:2px solid #ffffff1a;backdrop-filter:blur(3px);border-radius:14px;padding:8px 12px;font-weight:700}.tag{min-width:150px;text-align:center}.coin-box{font-size:1.1rem}.health-wrap{min-width:180px}.health-bar{width:100%;height:18px;background:#ffffff24;border-radius:999px;overflow:hidden}.health-fill{height:100%;width:100%;background:linear-gradient(90deg,#ff5d6c,#ffcb5b,#63d471);border-radius:inherit;transition:width 120ms ease}.health-label{display:block;text-align:right;font-size:.8rem;margin-top:4px}.toast{position:absolute;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;background:#172033e6;color:var(--cream);border:1px solid #ffffff26;border-radius:999px;padding:10px 18px;font-weight:700;transition:all 180ms ease;z-index:12}.toast.show{opacity:1;transform:translate(-50%,0)}.overlay{position:absolute;inset:0;display:none;place-items:center;z-index:20;background:#11152285}.overlay.visible{display:grid}.panel{width:min(90%,540px);background:var(--panel);border:2px solid #ffffff14;border-radius:22px;padding:26px 24px 20px;text-align:center;box-shadow:0 18px 34px #00000059}.panel h1{margin:0 0 10px;font-size:clamp(2rem,3vw,3rem)}.subtitle{margin:0 0 18px;line-height:1.5;color:#eae3d2}.shop-grid,.options-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:16px}button{border:0;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer;transition:transform 100ms ease,filter 100ms ease}button:hover{transform:translateY(-1px);filter:brightness(1.04)}.primary{background:linear-gradient(135deg,var(--yellow),#ffb703);color:#1e1a17}.secondary{background:linear-gradient(135deg,var(--blue),#7be0ff);color:#10263a}.skin-card{background:#ffffff0d;color:var(--cream);border:1px solid #ffffff14;padding:12px 8px;text-align:center}.skin-card.active{outline:3px solid var(--yellow)}.meta{margin-top:14px;font-size:.95rem;opacity:.9}
-</style>
+    .meta {
+      margin-top: 14px;
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+  </style>
 </head>
 <body>
   <div class="game-shell" id="shell">
@@ -225,7 +211,7 @@
 
     <canvas id="gameCanvas" width="1100" height="680"></canvas>
     <div class="toast" id="toast"></div>
-    <div class="overlay visible" id="overlay"></div>
+    <div class="overlay" id="overlay"></div>
   </div>
 
   <script>
@@ -240,15 +226,7 @@
       const healthLabel = document.getElementById('healthLabel');
 
       const keys = {};
-      const world = {
-        width: 4200,
-        groundY: 540,
-        started: false,
-        completed: false,
-        time: 0,
-        quake: 0
-      };
-
+      const world = { width: 4200, groundY: 540, started: false, completed: false, time: 0, quake: 0 };
       const particles = [];
       const obstacles = [];
       const coins = [];
@@ -265,8 +243,7 @@
         jumpPower: 14,
         onGround: true,
         health: 100,
-        invuln: 0,
-        walk: 0
+        invuln: 0
       };
 
       const characters = {
@@ -277,9 +254,9 @@
       };
 
       const difficulties = {
-        tranqui: { name: 'Tranqui', damage: 12, coinMult: 1.0, quake: 0.55 },
-        normal: { name: 'Normal', damage: 17, coinMult: 1.4, quake: 0.8 },
-        caos: { name: 'Caos', damage: 22, coinMult: 1.8, quake: 1.0 }
+        tranqui: { name: 'Tranqui', damage: 12, quake: 0.55 },
+        normal: { name: 'Normal', damage: 17, quake: 0.8 },
+        caos: { name: 'Caos', damage: 22, quake: 1.0 }
       };
 
       let save = JSON.parse(localStorage.getItem('terremotoSave') || 'null') || {
@@ -323,6 +300,16 @@
         overlay.classList.remove('visible');
       }
 
+      function bindOverlayActions() {
+        overlay.querySelectorAll('[data-action]').forEach((button) => {
+          button.addEventListener('click', () => {
+            const action = button.dataset.action;
+            if (action === 'start' || action === 'restart') startGame();
+            if (action === 'menu') showMenu();
+          });
+        });
+      }
+
       function createClouds() {
         clouds.length = 0;
         for (let i = 0; i < 18; i++) {
@@ -355,7 +342,6 @@
         player.vy = 0;
         player.health = 100;
         player.invuln = 0;
-        player.walk = 0;
         player.onGround = true;
         world.time = 0;
         world.quake = 0;
@@ -384,12 +370,12 @@
 
       function spawnObstacle() {
         const x = player.x + canvas.width * 0.7 + Math.random() * 350;
-        const typeRoll = Math.random();
+        const r = Math.random();
         let obstacle;
 
-        if (typeRoll < 0.5) {
+        if (r < 0.5) {
           obstacle = { x, y: world.groundY - 34, w: 30 + Math.random() * 28, h: 34, type: 'rock' };
-        } else if (typeRoll < 0.8) {
+        } else if (r < 0.8) {
           obstacle = { x, y: world.groundY - 50, w: 38 + Math.random() * 22, h: 50, type: 'bloque' };
         } else {
           obstacle = { x, y: world.groundY - 35, w: 30, h: 35, type: 'barril' };
@@ -444,7 +430,6 @@
               </div>
             </div>
           `);
-          bindOverlayActions();
         } else {
           setOverlay(`
             <div class="panel">
@@ -456,8 +441,9 @@
               </div>
             </div>
           `);
-          bindOverlayActions();
         }
+
+        bindOverlayActions();
       }
 
       function startGame() {
@@ -467,19 +453,9 @@
         notify('¡Agáchate y corre!');
       }
 
-      function bindOverlayActions() {
-        overlay.querySelectorAll('[data-action]').forEach((button) => {
-          button.addEventListener('click', () => {
-            const action = button.dataset.action;
-            if (action === 'start') startGame();
-            if (action === 'restart') startGame();
-            if (action === 'menu') showMenu();
-          });
-        });
-      }
-
       function showMenu() {
         resetGame();
+
         const choices = Object.keys(characters).map((id) => {
           const skin = characters[id];
           const active = save.skin === id ? 'active' : '';
@@ -557,12 +533,11 @@
 
         if (player.invuln > 0) player.invuln -= dt;
 
-        const spawnEvery = 52;
-        if (world.time % spawnEvery < 1 && world.time > 10) {
+        if (world.time > 10 && world.time % 52 < 1) {
           spawnObstacle();
         }
 
-        if (world.time % 40 < 1 && world.time > 8) {
+        if (world.time > 8 && world.time % 40 < 1) {
           spawnCoin();
         }
 
@@ -657,14 +632,18 @@
         const y = player.y;
         ctx.save();
         if (player.invuln > 0 && Math.floor(player.invuln / 5) % 2 === 0) ctx.globalAlpha = 0.35;
+
         ctx.fillStyle = currentSkin().color;
         ctx.fillRect(x, y, player.w, player.h);
+
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(x + 10, y + 16, 8, 8);
         ctx.fillRect(x + 28, y + 16, 8, 8);
+
         ctx.fillStyle = '#1a1a1a';
         ctx.fillRect(x + 13, y + 18, 3, 3);
         ctx.fillRect(x + 30, y + 18, 3, 3);
+
         ctx.fillStyle = '#ff726a';
         ctx.fillRect(x + 14, y + 30, 18, 6);
         ctx.restore();
@@ -719,7 +698,7 @@
       }
 
       function loop(ts) {
-        const dt = Math.min(2, ((ts - (loop.last || ts)) * 0.06));
+        const dt = Math.min(2, (ts - (loop.last || ts)) * 0.06);
         loop.last = ts;
         update(dt);
         render();
@@ -747,41 +726,3 @@
   </script>
 </body>
 </html>
-<body><div class="game-shell"><div class="hud"><div class="tag" id="statusText">🌍 ¡Corre!</div><div class="coin-box">🪙 <span id="coinText">0</span></div><div class="health-wrap"><div class="health-bar"><div class="health-fill" id="healthFill"></div></div><span class="health-label" id="healthLabel">100%</span></div></div><canvas id="gameCanvas" width="1100" height="680"></canvas><div class="toast" id="toast"></div><div class="overlay visible" id="overlay"></div></div>
-<script>
-(()=>{
-const canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d'),overlay=document.getElementById('overlay'),toast=document.getElementById('toast'),statusText=document.getElementById('statusText'),coinText=document.getElementById('coinText'),healthFill=document.getElementById('healthFill'),healthLabel=document.getElementById('healthLabel');
-const keys={},world={width:4200,groundY:540,started:false,completed:false,time:0,quake:0},particles=[],obstacles=[],coins=[],stars=[];
-const player={x:120,y:0,w:46,h:68,vx:0,vy:0,speed:4.5,jumpPower:14,onGround:true,health:100,invuln:0};
-const characters={paco:{name:'Paco Patata',emoji:'🥔',color:'#d49a58'},gordito:{name:'Gordito Ninja',emoji:'🍩',color:'#ef8ac0'},ninja:{name:'Ninja Rata',emoji:'🐭',color:'#7dd3fc'},robot:{name:'Robot Cangrejo',emoji:'🤖',color:'#9ad6a5'}};
-const difficulties={tranqui:{name:'Tranqui',damage:12,quake:.55},normal:{name:'Normal',damage:17,quake:.8},caos:{name:'Caos',damage:22,quake:1}};
-let save=JSON.parse(localStorage.getItem('terremotoSave')||'null')||{coins:0,owned:['paco'],skin:'paco',difficulty:'normal'};
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),diff=()=>difficulties[save.difficulty]||difficulties.normal,skin=()=>characters[save.skin]||characters.paco;
-function persist(){localStorage.setItem('terremotoSave',JSON.stringify(save));coinText.textContent=save.coins}function notify(t){toast.textContent=t;toast.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>toast.classList.remove('show'),1600)}
-function setOverlay(s){overlay.innerHTML=s;overlay.classList.add('visible')}function hideOverlay(){overlay.innerHTML='';overlay.classList.remove('visible')}
-function reset(){Object.assign(player,{x:120,y:world.groundY-player.h,vx:0,vy:0,health:100,invuln:0,onGround:true});Object.assign(world,{time:0,quake:0,started:false,completed:false});obstacles.length=coins.length=particles.length=0;hud()}
-function hud(){const h=clamp(player.health,0,100);healthFill.style.width=h+'%';healthLabel.textContent=Math.round(h)+'%';statusText.textContent=world.completed?'✅ ¡Zona segura!':'⚠️ ¡Corre!'}
-function camera(){return clamp(player.x-canvas.width*.34,0,world.width-canvas.width)}function hitbox(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
-function burst(x,y,color,n=12){for(let i=0;i<n;i++)particles.push({x,y,vx:(Math.random()-.5)*7,vy:(Math.random()-.5)*7,life:20+Math.random()*30,color})}
-function spawnObstacle(){const x=player.x+canvas.width*.7+Math.random()*350,r=Math.random();let o;if(r<.38)o={x,y:world.groundY-35,w:42+Math.random()*25,h:35,type:'ladrillos'};else if(r<.72)o={x,y:world.groundY-28,w:55+Math.random()*25,h:28,type:'madera'};else if(r<.9)o={x,y:world.groundY-48,w:42,h:48,type:'escombro'};else o={x,y:world.groundY-24,w:30,h:24,type:'tuberia'};obstacles.push(o)}
-function spawnCoin(){coins.push({x:player.x+canvas.width*.6+Math.random()*420,y:world.groundY-85-Math.random()*90,w:22,h:22,spin:0})}
-function jump(){if(player.onGround&&!world.completed){player.vy=-player.jumpPower;player.onGround=false;burst(player.x+18,world.groundY,'#ffd166',8);notify('¡Salto!')}}
-function damage(){if(player.invuln>0||world.completed)return;player.health-=diff().damage;player.invuln=46;player.vx=-4;player.vy=-6;burst(player.x+20,player.y+28,'#ff476f',18);hud();if(player.health<=0)finish(false)}
-function finish(win){world.started=false;world.completed=win;hud();if(win){save.coins+=12;persist()}setOverlay(`<div class="panel"><h1>${win?'🎉 ¡Lo lograste!':'💥 ¡Plof!'}</h1><p class="subtitle">${win?'Llegaste a la zona segura. Ganaste 12 monedas.':'Los escombros te alcanzaron. ¡Inténtalo de nuevo!'}</p><div class="options-grid"><button class="primary" data-action="restart">${win?'Jugar otra vez':'Reintentar'}</button><button class="secondary" data-action="menu">Menú</button></div></div>`);bind()}
-function start(){reset();world.started=true;hideOverlay();notify('¡Salta los escombros y corre!')}function bind(){overlay.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>b.dataset.action==='menu'?menu():start())}
-function menu(){reset();const chars=Object.keys(characters).map(id=>`<button class="skin-card ${save.skin===id?'active':''}" data-skin="${id}">${characters[id].emoji} ${characters[id].name}</button>`).join(''),ds=Object.keys(difficulties).map(id=>`<button class="skin-card ${save.difficulty===id?'active':''}" data-diff="${id}">${difficulties[id].name}</button>`).join('');setOverlay(`<div class="panel"><h1>🌪️ Terremoto</h1><p class="subtitle">Hacia la Zona Segura — corre por la ciudad antes de que los edificios se vengan abajo.</p><h3>Personaje</h3><div class="shop-grid">${chars}</div><h3>Dificultad</h3><div class="options-grid">${ds}</div><div class="meta">Monedas: 🪙 ${save.coins}</div><div class="options-grid" style="margin-top:18px"><button class="primary" data-action="start">Empezar</button></div></div>`);overlay.querySelectorAll('[data-skin]').forEach(b=>b.onclick=()=>{save.skin=b.dataset.skin;persist();menu()});overlay.querySelectorAll('[data-diff]').forEach(b=>b.onclick=()=>{save.difficulty=b.dataset.diff;persist();menu()});bind()}
-function update(dt){if(!world.started||world.completed)return;world.time+=dt;world.quake=clamp(world.time/45,0,1)*diff().quake;if(keys.ArrowLeft||keys.a)player.vx=-player.speed;else if(keys.ArrowRight||keys.d)player.vx=player.speed;else player.vx*=.8;if(Math.abs(player.vx)<.12)player.vx=0;if((keys.ArrowUp||keys.w||keys[' '])&&player.onGround)jump();player.vy+=.62;player.x=clamp(player.x+player.vx,0,world.width-player.w);player.y+=player.vy;if(player.y+player.h>=world.groundY){player.y=world.groundY-player.h;player.vy=0;player.onGround=true}else player.onGround=false;if(player.invuln>0)player.invuln-=dt;if(world.time%52<1&&world.time>10)spawnObstacle();if(world.time%40<1&&world.time>8)spawnCoin();for(let i=obstacles.length-1;i>=0;i--){const o=obstacles[i];o.x-=5.2;if(o.x+o.w<0){obstacles.splice(i,1);continue}if(hitbox(player,o))damage()}for(let i=coins.length-1;i>=0;i--){const c=coins[i];c.x-=5.2;c.spin+=.2;if(c.x+c.w<0){coins.splice(i,1);continue}if(hitbox(player,c)){save.coins++;persist();coins.splice(i,1);notify('+1 moneda')}}for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.life-=dt;if(p.life<=0)particles.splice(i,1)}if(player.x>=world.width-260)finish(true)}
-function background(cam){const g=ctx.createLinearGradient(0,0,0,canvas.height);g.addColorStop(0,'#080d2b');g.addColorStop(.55,'#182d5b');g.addColorStop(1,'#59405b');ctx.fillStyle=g;ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#fff3b0';stars.forEach(s=>{const x=s.x-cam*.25;if(x>-5&&x<canvas.width+5)ctx.fillRect(x,s.y,s.size,s.size)});ctx.fillStyle='#d7dcff';ctx.beginPath();ctx.arc(875,90,38,0,Math.PI*2);ctx.fill();ctx.fillStyle='#18244e';ctx.beginPath();ctx.arc(890,80,34,0,Math.PI*2);ctx.fill();
-// Montaña nocturna al fondo
-ctx.fillStyle='#101936';ctx.beginPath();ctx.moveTo(0,390);ctx.lineTo(260,170);ctx.lineTo(430,345);ctx.lineTo(650,125);ctx.lineTo(900,370);ctx.lineTo(1120,190);ctx.lineTo(1250,390);ctx.closePath();ctx.fill();ctx.fillStyle='#34436e';ctx.beginPath();ctx.moveTo(0,410);ctx.lineTo(310,250);ctx.lineTo(500,400);ctx.lineTo(710,220);ctx.lineTo(950,400);ctx.lineTo(1100,280);ctx.lineTo(1250,410);ctx.closePath();ctx.fill();
-// Edificios con ventanas encendidas
-for(let i=-1;i<18;i++){const x=i*95-(cam*.42%95),h=100+(i*37%170);ctx.fillStyle=i%3===0?'#202b4d':i%3===1?'#293557':'#1b2746';ctx.fillRect(x,world.groundY-h,72,h);ctx.fillStyle='#ffd66b';for(let wy=world.groundY-h+18;wy<world.groundY-18;wy+=27)for(let wx=x+12;wx<x+62;wx+=24)if((i+wy+wx)%3!==0)ctx.fillRect(wx,wy,8,10)}}
-function ground(cam){ctx.fillStyle='#302d43';ctx.fillRect(0,world.groundY,canvas.width,canvas.height-world.groundY);ctx.fillStyle='#75505a';ctx.fillRect(0,world.groundY,canvas.width,18);for(let x=-(cam%42);x<canvas.width+42;x+=42){ctx.fillStyle='#4d4052';ctx.fillRect(x,world.groundY+18,22,12)}}
-function safe(cam){const x=world.width-180-cam;ctx.fillStyle='#ffd166';ctx.fillRect(x,world.groundY-130,18,130);ctx.fillStyle='#fff6d4';ctx.fillRect(x-42,world.groundY-130,104,18);ctx.fillStyle='#72db79';ctx.fillRect(x-20,world.groundY-110,60,30)}
-function playerDraw(cam){const x=player.x-cam,y=player.y;ctx.save();if(player.invuln>0&&Math.floor(player.invuln/5)%2===0)ctx.globalAlpha=.35;ctx.fillStyle=skin().color;ctx.fillRect(x,y,player.w,player.h);ctx.fillStyle='#fff';ctx.fillRect(x+10,y+16,8,8);ctx.fillRect(x+28,y+16,8,8);ctx.fillStyle='#1a1a1a';ctx.fillRect(x+13,y+18,3,3);ctx.fillRect(x+30,y+18,3,3);ctx.fillStyle='#ff726a';ctx.fillRect(x+14,y+30,18,6);ctx.restore()}
-function debris(cam){for(const o of obstacles){const x=o.x-cam;ctx.save();ctx.translate(x+o.w/2,o.y+o.h/2);ctx.rotate((o.x%7)*.08);if(o.type==='ladrillos'){ctx.fillStyle='#b56d56';ctx.fillRect(-o.w/2,-o.h/2,o.w,o.h);ctx.fillStyle='#e5a071';for(let j=-o.w/2+5;j<o.w/2;j+=22)ctx.fillRect(j,-o.h/2+5,15,8)}else if(o.type==='madera'){ctx.fillStyle='#8b563e';ctx.fillRect(-o.w/2,-o.h/2,o.w,o.h);ctx.strokeStyle='#d18a54';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-o.w/2,-o.h/2);ctx.lineTo(o.w/2,o.h/2);ctx.stroke()}else if(o.type==='tuberia'){ctx.fillStyle='#71909a';ctx.fillRect(-o.w/2,-o.h/2,o.w,o.h);ctx.fillStyle='#b8d0c8';ctx.fillRect(-o.w/2+5,-o.h/2+5,o.w-10,6)}else{ctx.fillStyle='#6d6d7b';ctx.beginPath();ctx.moveTo(-o.w/2,o.h/2);ctx.lineTo(-o.w/3,-o.h/2);ctx.lineTo(o.w/2,-o.h/3);ctx.lineTo(o.w/3,o.h/2);ctx.closePath();ctx.fill()}ctx.restore()}}
-function draw(){const cam=camera(),shake=world.quake>.1?(Math.random()-.5)*12*world.quake:0;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();ctx.translate(shake,shake*.5);background(cam);ground(cam);safe(cam);for(const c of coins){const x=c.x-cam+c.w/2,y=c.y+c.h/2;ctx.save();ctx.translate(x,y);ctx.rotate(c.spin);ctx.fillStyle='#ffd166';ctx.fillRect(-11,-11,22,22);ctx.fillStyle='#fff0b8';ctx.fillRect(-5,-5,10,10);ctx.restore()}debris(cam);playerDraw(cam);for(const p of particles){ctx.globalAlpha=clamp(p.life/35,0,1);ctx.fillStyle=p.color;ctx.fillRect(p.x-cam,p.y,5,5)}ctx.globalAlpha=1;ctx.restore()}
-function loop(ts){const dt=Math.min(2,(ts-(loop.last||ts))*.06);loop.last=ts;update(dt);draw();requestAnimationFrame(loop)}
-document.addEventListener('keydown',e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault()});document.addEventListener('keyup',e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=false});for(let i=0;i<90;i++)stars.push({x:Math.random()*world.width,y:20+Math.random()*280,size:Math.random()<.8?2:3});persist();menu();requestAnimationFrame(loop)
-})()
-</script></body></html>
