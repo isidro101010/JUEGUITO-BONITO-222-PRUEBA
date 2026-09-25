@@ -6,13 +6,19 @@
   <title>Terremoto: Hacia la Zona Segura</title>
   <style>
     :root {
-      --ink: #172033;
+      --ink: #0a1020;
       --cream: #fff8e7;
       --pink: #ff6b8a;
       --yellow: #ffd166;
       --blue: #5cc8ff;
       --green: #63d471;
-      --panel: rgba(26, 34, 55, 0.92);
+      --panel: rgba(14, 20, 36, 0.88);
+      --night1: #06111d;
+      --night2: #0d1d32;
+      --night3: #142d4d;
+      --city: #101b2d;
+      --orange: #ffa94d;
+      --red: #ff5d73;
     }
 
     * { box-sizing: border-box; }
@@ -22,7 +28,9 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: var(--ink);
+      background:
+        radial-gradient(circle at top, rgba(92, 200, 255, 0.18), transparent 30%),
+        linear-gradient(180deg, #050b16 0%, #0d1c2f 35%, #04070f 100%);
       font-family: Arial, Helvetica, sans-serif;
       color: var(--cream);
     }
@@ -36,17 +44,18 @@
       position: relative;
       width: min(96vw, 1100px);
       height: min(90vh, 680px);
-      border-radius: 18px;
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
-      background: #203052;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.66);
+      background: linear-gradient(180deg, #081524 0%, #102443 40%, #0b1322 100%);
+      border: 1px solid rgba(150, 197, 255, 0.12);
     }
 
     canvas {
       display: block;
       width: 100%;
       height: 100%;
-      background: linear-gradient(#284c7a 0%, #78d0ef 52%, #f4d38e 100%);
+      background: linear-gradient(180deg, #081521 0%, #122c50 42%, #1a1f2d 100%);
     }
 
     .hud {
@@ -62,12 +71,13 @@
     }
 
     .tag, .coin-box, .health-wrap {
-      background: rgba(19, 26, 42, 0.66);
-      border: 2px solid rgba(255,255,255,0.1);
-      backdrop-filter: blur(3px);
+      background: rgba(10, 17, 29, 0.72);
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(4px);
       border-radius: 14px;
       padding: 8px 12px;
       font-weight: 700;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.15);
     }
 
     .tag { min-width: 150px; text-align: center; }
@@ -77,9 +87,10 @@
     .health-bar {
       width: 100%;
       height: 18px;
-      background: rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.12);
       border-radius: 999px;
       overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
     }
 
     .health-fill {
@@ -88,6 +99,7 @@
       background: linear-gradient(90deg, #ff5d6c, #ffcb5b, #63d471);
       border-radius: inherit;
       transition: width 120ms ease;
+      box-shadow: 0 0 18px rgba(99, 212, 113, 0.5);
     }
 
     .health-label {
@@ -103,7 +115,7 @@
       bottom: 24px;
       transform: translate(-50%, 20px);
       opacity: 0;
-      background: rgba(23, 32, 51, 0.9);
+      background: rgba(17, 28, 46, 0.9);
       color: var(--cream);
       border: 1px solid rgba(255,255,255,0.15);
       border-radius: 999px;
@@ -112,6 +124,7 @@
       transition: all 180ms ease;
       z-index: 12;
       pointer-events: none;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
     }
 
     .toast.show {
@@ -125,24 +138,26 @@
       display: none;
       place-items: center;
       z-index: 20;
-      background: rgba(17, 21, 34, 0.52);
+      background: rgba(4, 9, 17, 0.55);
+      backdrop-filter: blur(2px);
     }
 
     .overlay.visible { display: grid; }
 
     .panel {
       width: min(90%, 540px);
-      background: var(--panel);
-      border: 2px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, rgba(18, 28, 47, 0.95), rgba(12, 17, 29, 0.94));
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 22px;
       padding: 26px 24px 20px;
       text-align: center;
-      box-shadow: 0 18px 34px rgba(0,0,0,0.35);
+      box-shadow: 0 22px 45px rgba(0,0,0,0.42), inset 0 0 0 1px rgba(135, 206, 255, 0.08);
     }
 
     .panel h1 {
       margin: 0 0 10px;
       font-size: clamp(2rem, 3vw, 3rem);
+      text-shadow: 0 6px 20px rgba(255, 209, 102, 0.17);
     }
 
     .subtitle {
@@ -164,10 +179,14 @@
       padding: 12px 14px;
       font-weight: 800;
       cursor: pointer;
-      transition: transform 100ms ease, filter 100ms ease;
+      transition: transform 100ms ease, filter 100ms ease, box-shadow 100ms ease;
     }
 
-    button:hover { transform: translateY(-1px); filter: brightness(1.04); }
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.14);
+    }
 
     .primary {
       background: linear-gradient(135deg, var(--yellow), #ffb703);
@@ -180,7 +199,7 @@
     }
 
     .skin-card {
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.04);
       color: var(--cream);
       border: 1px solid rgba(255,255,255,0.08);
       padding: 12px 8px;
@@ -189,6 +208,7 @@
 
     .skin-card.active {
       outline: 3px solid var(--yellow);
+      box-shadow: 0 0 0 4px rgba(255, 209, 102, 0.14);
     }
 
     .meta {
@@ -231,6 +251,7 @@
       const obstacles = [];
       const coins = [];
       const clouds = [];
+      const cityLights = [];
 
       const player = {
         x: 120,
@@ -312,12 +333,26 @@
 
       function createClouds() {
         clouds.length = 0;
-        for (let i = 0; i < 18; i++) {
+        for (let i = 0; i < 12; i++) {
           clouds.push({
             x: Math.random() * world.width,
-            y: 40 + Math.random() * 180,
-            r: 18 + Math.random() * 34,
-            a: 0.14 + Math.random() * 0.18
+            y: 50 + Math.random() * 150,
+            r: 18 + Math.random() * 28,
+            a: 0.11 + Math.random() * 0.12
+          });
+        }
+      }
+
+      function createCityLights() {
+        cityLights.length = 0;
+        for (let i = 0; i < 90; i++) {
+          cityLights.push({
+            x: Math.random() * world.width,
+            y: 180 + Math.random() * 280,
+            w: 4 + Math.random() * 10,
+            h: 8 + Math.random() * 18,
+            on: Math.random() > 0.25,
+            blink: 0.4 + Math.random() * 0.9
           });
         }
       }
@@ -587,15 +622,60 @@
       }
 
       function drawBackground(cam) {
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, '#203b68');
-        gradient.addColorStop(0.55, '#7ad7ef');
-        gradient.addColorStop(1, '#f4d08d');
-        ctx.fillStyle = gradient;
+        const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        sky.addColorStop(0, '#071521');
+        sky.addColorStop(0.45, '#10243f');
+        sky.addColorStop(0.8, '#1d3150');
+        sky.addColorStop(1, '#22243a');
+        ctx.fillStyle = sky;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+        for (let i = 0; i < 80; i++) {
+          const x = ((i * 137) % (canvas.width + 150)) - 50;
+          const y = 36 + ((i * 79) % 170);
+          const r = 1.3 + ((i * 13) % 2.2);
+          ctx.fillStyle = 'rgba(255,255,255,' + (0.35 + ((i % 5) * 0.12)) + ')';
+          ctx.fillRect(x - cam * 0.12, y, r, r);
+        }
+
+        const moonX = canvas.width * 0.78;
+        const moonY = 90;
+        ctx.fillStyle = 'rgba(255, 245, 193, 0.9)';
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, 26, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255, 245, 193, 0.22)';
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, 42, 0, Math.PI * 2);
+        ctx.fill();
+
+        for (let i = 0; i < 26; i++) {
+          const bx = (i * 180) - (cam * 0.55) % 180;
+          const bw = 55 + (i % 4) * 26;
+          const bh = 120 + (i % 5) * 60;
+          const by = world.groundY - bh;
+
+          ctx.fillStyle = '#0a1221';
+          ctx.fillRect(bx, by, bw, bh);
+
+          for (let row = 0; row < 7; row++) {
+            for (let col = 0; col < Math.max(2, Math.floor((bw - 14) / 12)); col++) {
+              const x = bx + 8 + col * 12;
+              const y = by + 12 + row * 16;
+              const lit = (Math.sin((x + cam + row * 17) * 0.16) + Math.cos((y + i) * 0.24)) > 0.2;
+              if (lit) {
+                ctx.fillStyle = row % 2 === 0 ? '#ffe48a' : '#ffb86b';
+                ctx.fillRect(x, y, 5, 9);
+              }
+            }
+          }
+
+          ctx.fillStyle = 'rgba(255,255,255,0.05)';
+          ctx.fillRect(bx + 8, by + 12, bw - 16, bh - 20);
+        }
+
         for (const cloud of clouds) {
-          const x = cloud.x - cam;
+          const x = cloud.x - cam * 0.2;
           ctx.fillStyle = 'rgba(255,255,255,' + cloud.a + ')';
           ctx.beginPath();
           ctx.arc(x, cloud.y, cloud.r, 0, Math.PI * 2);
@@ -606,14 +686,20 @@
       }
 
       function drawGround(cam) {
-        ctx.fillStyle = '#4d3a48';
+        ctx.fillStyle = '#1a202d';
         ctx.fillRect(0, world.groundY, canvas.width, canvas.height - world.groundY);
-        ctx.fillStyle = '#6ad971';
+
+        ctx.fillStyle = '#2f3746';
+        ctx.fillRect(0, world.groundY + 8, canvas.width, 14);
+
+        ctx.fillStyle = '#4edb7d';
         ctx.fillRect(0, world.groundY, canvas.width, 18);
 
         for (let x = -((cam % 42)); x < canvas.width + 42; x += 42) {
-          ctx.fillStyle = '#5ecb68';
+          ctx.fillStyle = '#59d16a';
           ctx.fillRect(x, world.groundY + 18, 22, 12);
+          ctx.fillStyle = '#3faa59';
+          ctx.fillRect(x + 6, world.groundY + 30, 10, 8);
         }
       }
 
@@ -621,10 +707,12 @@
         const x = (world.width - 180) - cam;
         ctx.fillStyle = '#ffd166';
         ctx.fillRect(x, world.groundY - 130, 18, 130);
-        ctx.fillStyle = '#fff6d4';
+        ctx.fillStyle = '#fff4d6';
         ctx.fillRect(x - 42, world.groundY - 130, 104, 18);
         ctx.fillStyle = '#72db79';
         ctx.fillRect(x - 20, world.groundY - 110, 60, 30);
+        ctx.fillStyle = '#e8ad28';
+        ctx.fillRect(x + 2, world.groundY - 112, 10, 94);
       }
 
       function drawPlayer(cam) {
@@ -633,26 +721,49 @@
         ctx.save();
         if (player.invuln > 0 && Math.floor(player.invuln / 5) % 2 === 0) ctx.globalAlpha = 0.35;
 
-        ctx.fillStyle = currentSkin().color;
-        ctx.fillRect(x, y, player.w, player.h);
+        const skin = currentSkin();
+        const body = skin.color;
 
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(x + 10, y + 16, 8, 8);
-        ctx.fillRect(x + 28, y + 16, 8, 8);
+        ctx.fillStyle = '#1b1d29';
+        ctx.fillRect(x + 8, y + 2, 30, 18);
+
+        ctx.fillStyle = body;
+        ctx.fillRect(x + 10, y + 18, 26, 34);
+
+        ctx.fillStyle = '#f9d9c3';
+        ctx.fillRect(x + 14, y + 20, 8, 8);
+        ctx.fillRect(x + 24, y + 20, 8, 8);
 
         ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(x + 13, y + 18, 3, 3);
-        ctx.fillRect(x + 30, y + 18, 3, 3);
+        ctx.fillRect(x + 16, y + 22, 3, 3);
+        ctx.fillRect(x + 27, y + 22, 3, 3);
 
-        ctx.fillStyle = '#ff726a';
-        ctx.fillRect(x + 14, y + 30, 18, 6);
+        ctx.fillStyle = '#ffd166';
+        ctx.fillRect(x + 12, y + 32, 22, 5);
+
+        ctx.fillStyle = '#2d3748';
+        ctx.fillRect(x + 11, y + 52, 8, 16);
+        ctx.fillRect(x + 27, y + 52, 8, 16);
+
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(x + 12, y + 54, 6, 14);
+        ctx.fillRect(x + 28, y + 54, 6, 14);
+
+        ctx.fillStyle = '#dce7ff';
+        ctx.fillRect(x + 14, y + 12, 18, 5);
         ctx.restore();
       }
 
       function drawObstacles(cam) {
         for (const obstacle of obstacles) {
+          const x = obstacle.x - cam;
           ctx.fillStyle = obstacle.type === 'rock' ? '#7a7f88' : obstacle.type === 'bloque' ? '#a8744d' : '#7d5f3d';
-          ctx.fillRect(obstacle.x - cam, obstacle.y, obstacle.w, obstacle.h);
+          ctx.fillRect(x, obstacle.y, obstacle.w, obstacle.h);
+
+          if (obstacle.type === 'barril') {
+            ctx.fillStyle = '#ffd166';
+            ctx.fillRect(x + 6, obstacle.y + 8, obstacle.w - 12, 5);
+          }
         }
       }
 
@@ -719,6 +830,7 @@
       });
 
       createClouds();
+      createCityLights();
       persist();
       showMenu();
       requestAnimationFrame(loop);
